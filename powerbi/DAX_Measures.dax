@@ -1,0 +1,42 @@
+// Rename your table to HR first (Data pane > right-click table > Rename)
+
+// ---------- Measures ----------
+Total Employees = COUNTROWS(HR)
+Attrition Count = CALCULATE(COUNTROWS(HR), HR[Attrition] = "Yes")
+Active Employees = [Total Employees] - [Attrition Count]
+Attrition Rate = DIVIDE([Attrition Count], [Total Employees], 0)
+Avg Monthly Income = AVERAGE(HR[MonthlyIncome])
+Avg Income Leavers = CALCULATE(AVERAGE(HR[MonthlyIncome]), HR[Attrition] = "Yes")
+Overtime Attrition Rate =
+    CALCULATE([Attrition Rate], HR[OverTime] = "Yes")
+No Overtime Attrition Rate =
+    CALCULATE([Attrition Rate], HR[OverTime] = "No")
+Overtime Gap = DIVIDE([Overtime Attrition Rate], [No Overtime Attrition Rate], 0)
+Replacement Cost % = 0.5
+Attrition Cost =
+    [Attrition Count] * [Avg Income Leavers] * 12 * [Replacement Cost %]
+Rate vs Company Avg =
+    [Attrition Rate] - CALCULATE([Attrition Rate], ALL(HR))
+
+// ---------- Calculated columns ----------
+Age Group =
+SWITCH(TRUE(),
+    HR[Age] < 25, "18-24",
+    HR[Age] < 35, "25-34",
+    HR[Age] < 45, "35-44",
+    HR[Age] < 55, "45-54",
+    "55+")
+
+Income Band =
+SWITCH(TRUE(),
+    HR[MonthlyIncome] < 3000, "1. Low (<3K)",
+    HR[MonthlyIncome] < 6000, "2. Medium (3-6K)",
+    HR[MonthlyIncome] < 10000, "3. High (6-10K)",
+    "4. Very High (10K+)")
+
+Tenure Band =
+SWITCH(TRUE(),
+    HR[YearsAtCompany] <= 2, "1. 0-2 yrs",
+    HR[YearsAtCompany] <= 5, "2. 3-5 yrs",
+    HR[YearsAtCompany] <= 10, "3. 6-10 yrs",
+    "4. 11+ yrs")

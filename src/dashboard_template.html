@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Retention Radar · IBM HR Attrition Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f3f8;--card:#fff;--ink:#16213e;--mut:#5b6882;--line:#dfe4ee;--stay:#0f9d8c;--left:#e4572e;--acc:#4b44a3}
+:root[data-theme=dark]{--bg:#0d1324;--card:#151d33;--ink:#e8ecf6;--mut:#93a0ba;--line:#26314d;--stay:#2ec4b0;--left:#ff7a4d;--acc:#9a93ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'IBM Plex Sans',system-ui,sans-serif}
+h1,h2,.hd{font-family:'Bricolage Grotesque','IBM Plex Sans',sans-serif;letter-spacing:-.02em;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.top{display:flex;align-items:center;gap:20px;padding:12px 28px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.brand b{font:800 20px 'Bricolage Grotesque',sans-serif}.brand span{display:block;font-size:12px;color:var(--mut)}
+nav{display:flex;gap:4px;flex:1}nav button,.tools button{background:none;border:0;padding:8px 14px;border-radius:8px;color:var(--mut);font-weight:500}
+nav button.on{color:var(--ink);box-shadow:inset 0 -3px var(--left)}.tools button{border:1px solid var(--line)}
+main{max-width:1240px;margin:0 auto;padding:24px 28px 60px}.pg{display:none}.pg.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.grid{display:grid;gap:18px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g2,.g3,.hero{grid-template-columns:1fr!important}.row{grid-template-columns:110px 1fr 80px!important}}
+.hero{display:grid;grid-template-columns:5fr 6fr;gap:28px;align-items:center;margin-bottom:22px}
+h1{font-size:clamp(30px,4.2vw,50px);line-height:1.05;font-weight:800}h1 em{font-style:normal;color:var(--left)}
+.sub{color:var(--mut);margin:12px 0 18px;max-width:46ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.chips b{font-size:13px;color:var(--mut);width:84px;align-self:center;font-weight:500}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:4px 13px;font-size:13px;transition:.2s}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dots{display:grid;grid-template-columns:repeat(49,1fr);gap:3px}
+.dots i{aspect-ratio:1;border-radius:50%;background:var(--stay);opacity:.8;transition:opacity .5s,transform .5s;animation:pop .5s both;animation-delay:calc(var(--d)*1ms)}
+.dots i.l{background:var(--left);opacity:1}.dots i.off{opacity:.07;transform:scale(.6)}
+@keyframes pop{from{transform:scale(0);opacity:0}}
+.legend{font-size:13px;color:var(--mut);margin-top:10px;display:flex;gap:16px}.legend s{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;text-decoration:none}
+.kpi small{color:var(--mut);display:block;font-size:13px}.kpi .hd{font-size:32px;font-weight:800}.kpi p{margin:2px 0 0;font-size:12px;color:var(--mut)}
+h2{font-size:19px;margin-bottom:4px}.note{font-size:13px;color:var(--mut);margin:0 0 12px}
+.row{display:grid;grid-template-columns:150px 1fr 96px;gap:10px;align-items:center;padding:4px 6px;border-radius:8px}
+.row.clk{cursor:pointer}.row.clk:hover,.row.on{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.lb{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vl{font-size:13px;text-align:right}.vl small{color:var(--mut)}
+.track{position:relative;height:12px;background:var(--line);border-radius:6px}.fill{display:block;height:100%;width:0;border-radius:6px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.45}
+.ln{fill:none;stroke:var(--left);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:dr 1.3s .1s forwards}@keyframes dr{to{stroke-dashoffset:0}}
+svg text{fill:var(--mut);font-size:11px}svg{width:100%;height:auto}
+.heat{display:grid;gap:4px;font-size:13px}.heat div{padding:10px 6px;border-radius:8px;text-align:center}.heat .h{color:var(--mut);padding:4px}
+.hot{display:grid;gap:10px;margin:0;padding:0;list-style:none}.hot li{padding:10px 12px;border-left:4px solid var(--left);background:color-mix(in srgb,var(--left) 8%,transparent);border-radius:0 8px 8px 0;font-size:14px}
+.ctl{display:grid;grid-template-columns:1fr 70px;gap:4px 10px;align-items:center;margin-bottom:10px;font-size:13px}.ctl input[type=range]{grid-column:1/3;width:100%;accent-color:var(--acc)}.ctl output{text-align:right;font-weight:600}
+.tg{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0}.tg label{font-size:14px}
+.gauge{text-align:center}.gauge .hd{font-size:44px;font-weight:800;margin-top:-52px}
+.gp{fill:none;stroke-width:16;stroke-linecap:round}.gp.bg{stroke:var(--line)}.gp.fg{transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1),stroke .4s}
+.lv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.lv b{color:var(--stay)}
+.cb{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:8px;font-size:13px;margin:5px 0}.cb div{position:relative;height:12px}.cb i{position:absolute;height:100%;border-radius:4px;transition:.5s}
+footer{color:var(--mut);font-size:13px;margin-top:30px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ln{stroke-dashoffset:0}}
+</style></head><body>
+<header class="top"><div class="brand"><b>Retention Radar</b><span>IBM HR attrition analytics</span></div>
+<nav id="tabs"><button data-p="ov" class="on">Overview</button><button data-p="dr">Drivers</button><button data-p="sim">Risk simulator</button></nav>
+<div class="tools"><button id="exp">Export filtered CSV</button> <button id="theme" aria-label="Toggle dark mode">Theme</button></div></header>
+<main>
+<section class="pg on" id="ov">
+ <div class="hero"><div>
+  <h1><span id="hl">0</span> of <span id="hn">0</span> employees <em>left</em></h1>
+  <p class="sub" id="sub"></p>
+  <div id="chips"></div>
+ </div><div><div class="dots" id="dots"></div>
+  <div class="legend"><span><s style="background:var(--left)"></s>Left the company</span><span><s style="background:var(--stay)"></s>Stayed</span><span>Each dot is one employee; filters dim the rest.</span></div></div></div>
+ <div class="grid g3" style="margin-bottom:18px">
+  <div class="card kpi"><small>Attrition rate</small><div class="hd" id="k1"></div><p id="k1s"></p></div>
+  <div class="card kpi"><small>Avg monthly income: leavers</small><div class="hd" id="k2"></div><p id="k2s"></p></div>
+  <div class="card kpi"><small>Overtime gap</small><div class="hd" id="k3"></div><p id="k3s"></p></div>
+  <div class="card kpi"><small>Estimated cost of attrition</small><div class="hd" id="k4"></div>
+   <p><label>Replacement cost <output id="rcv">50</output>% of salary<input id="rc" type="range" min="20" max="200" value="50" step="10" style="width:100%;accent-color:var(--acc)"></label></p></div>
+ </div>
+ <div class="grid g2">
+  <div class="card"><h2>Attrition rate by department</h2><p class="note">Click a bar to filter everything. Line marks the average.</p><div id="b-Department"></div></div>
+  <div class="card"><h2>Hot spots</h2><p class="note">Groups of 30+ employees leaving most above average.</p><ul class="hot" id="hot"></ul></div>
+  <div class="card"><h2>Attrition rate by job role</h2><div id="b-JobRole"></div></div>
+  <div class="card"><h2>When do people leave?</h2><p class="note">Attrition rate by years at company (3-year smoothing).</p><div id="line"></div></div>
+ </div></section>
+<section class="pg" id="dr"><div class="grid g2">
+ <div class="card"><h2>Overtime</h2><div id="b-OverTime"></div></div>
+ <div class="card"><h2>Age group</h2><div id="b-AgeGroup"></div></div>
+ <div class="card"><h2>Income band</h2><div id="b-IncomeBand"></div></div>
+ <div class="card"><h2>Business travel</h2><div id="b-BusinessTravel"></div></div>
+ <div class="card"><h2>Marital status</h2><div id="b-MaritalStatus"></div></div>
+ <div class="card"><h2>Job satisfaction</h2><div id="b-JobSatisfaction"></div></div>
+ <div class="card"><h2>Work-life balance</h2><div id="b-WorkLifeBalance"></div></div>
+ <div class="card"><h2>Environment satisfaction</h2><div id="b-EnvironmentSatisfaction"></div></div>
+ <div class="card" style="grid-column:1/-1"><h2>Department × tenure heatmap</h2><p class="note">Attrition rate and headcount. Darker means more people leaving.</p><div class="heat" id="heat"></div></div>
+</div></section>
+<section class="pg" id="sim"><div class="grid g2">
+ <div class="card"><h2>Describe an employee</h2><p class="note">Move the sliders to estimate their attrition risk.</p><div id="ctls"></div>
+  <div class="tg"><label><input type="checkbox" id="OverTime"> Works overtime</label><label><input type="checkbox" id="FrequentTravel"> Travels frequently</label><label><input type="checkbox" id="Single"> Single</label></div></div>
+ <div class="card"><h2>Estimated attrition risk</h2><div class="gauge"><svg viewBox="0 0 180 100"><path class="gp bg" d="M10 90A80 80 0 0 1 170 90"/><path class="gp fg" id="arc" d="M10 90A80 80 0 0 1 170 90"/></svg>
+  <div class="hd" id="pr">0%</div><div id="band" class="note"></div></div>
+  <h2 style="margin-top:14px">What drives this score</h2><div id="why"></div>
+  <h2 style="margin-top:14px">Retention levers</h2><p class="note">Change in estimated risk if the company acted. These are model associations, not proven causes.</p><div id="lev"></div></div>
+</div></section>
+<footer id="foot"></footer>
+</main>
+<script>
+const DATA=/*__DATA__*/null,{K,M}=DATA,R=DATA.R.map(a=>Object.fromEntries(K.map((k,i)=>[k,a[i]])));
+const $=s=>document.querySelector(s),pc=x=>(x*100).toFixed(1)+'%',fmt=n=>Math.round(n).toLocaleString('en-US'),cl=s=>String(s).replace(/^\d[:.]?\s/,'');
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches,F={Department:null,OverTime:null,Gender:null};
+const ORD=new Set(['AgeGroup','IncomeBand','TenureBand','JobSatisfaction','WorkLifeBalance','EnvironmentSatisfaction','OverTime']);
+const sel=ex=>R.filter(r=>Object.entries(F).every(([k,v])=>!v||k===ex||r[k]===v));
+const st=a=>{const n=a.length,l=a.reduce((s,r)=>s+r.Att,0);return{n,l,rate:n?l/n:0}};
+const avg=(a,k)=>a.length?a.reduce((s,r)=>s+r[k],0)/a.length:0;
+function grp(rows,k){const m=new Map();rows.forEach(r=>{const g=m.get(r[k])||{k:r[k],n:0,l:0};g.n++;g.l+=r.Att;m.set(r[k],g)});const a=[...m.values()];a.forEach(g=>g.rate=g.l/g.n);
+ return ORD.has(k)?a.sort((x,y)=>(''+x.k).localeCompare(''+y.k)):a.sort((x,y)=>y.rate-x.rate)}
+function cnt(el,to,f=fmt){const s=performance.now(),from=+el.dataset.v||0;el.dataset.v=to;const d=RM?1:900;
+ (function t(n){const p=Math.min(1,(n-s)/d),e=1-Math.pow(1-p,3);el.textContent=f(from+(to-from)*e);if(p<1)requestAnimationFrame(t)})(s)}
+// dots
+$('#dots').innerHTML=R.map((r,i)=>`<i class="${r.Att?'l':''}" style="--d:${i*0.7}"></i>`).join('');
+// chips
+const CH=[['Department','Department'],['OverTime','Overtime'],['Gender','Gender']];
+$('#chips').innerHTML=CH.map(([k,t])=>`<div class="chips"><b>${t}</b>${[...new Set(R.map(r=>r[k]))].sort().map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${v}</button>`).join('')}</div>`).join('')+'<div class="chips"><button class="chip" id="rst">Reset filters</button></div>';
+function tog(k,v){if(!(k in F))return;F[k]=F[k]===v?null:v;render(true)}
+document.addEventListener('click',e=>{const c=e.target.closest('.chip[data-k]'),r=e.target.closest('.row.clk');if(c)tog(c.dataset.k,c.dataset.v);if(r)tog(r.dataset.k,r.dataset.v);if(e.target.id==='rst'){Object.keys(F).forEach(k=>F[k]=null);render(true)}});
+function bars(k){const g=grp(sel(k),k),base=st(sel()).rate,mx=Math.max(base,...g.map(x=>x.rate),.01);
+ $('#b-'+k).innerHTML=g.map(x=>`<div class="row${k in F?' clk':''}${F[k]===x.k?' on':''}" data-k="${k}" data-v="${x.k}"><span class="lb" title="${cl(x.k)}">${cl(x.k)}</span><div class="track"><i class="fill" style="background:${x.rate>base?'var(--left)':'var(--stay)'}" data-w="${x.rate/mx*100}"></i><u class="tick" style="left:${base/mx*100}%"></u></div><span class="vl"><b>${pc(x.rate)}</b> <small>n=${x.n}</small></span></div>`).join('');
+ requestAnimationFrame(()=>requestAnimationFrame(()=>$('#b-'+k).querySelectorAll('.fill').forEach(f=>f.style.width=f.dataset.w+'%')))}
+function line(rows){const by=Array.from({length:21},()=>({n:0,l:0}));rows.forEach(r=>{const y=Math.min(20,r.YearsAtCompany);by[y].n++;by[y].l+=r.Att});
+ const p=by.map((_,i)=>{let n=0,l=0;for(let j=Math.max(0,i-1);j<=Math.min(20,i+1);j++){n+=by[j].n;l+=by[j].l}return n?l/n:0});
+ const W=520,H=200,mx=Math.max(.3,...p),X=i=>34+i*(W-48)/20,Y=v=>H-26-v/mx*(H-46);
+ const d=p.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join('');
+ $('#line').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Attrition rate by years at company">${[0,.5,1].map(t=>`<line x1="34" x2="${W-14}" y1="${Y(mx*t)}" y2="${Y(mx*t)}" stroke="var(--line)"/><text x="0" y="${Y(mx*t)+4}">${Math.round(mx*t*100)}%</text>`).join('')}${[0,5,10,15,20].map(i=>`<text x="${X(i)-6}" y="${H-6}">${i}${i==20?'+':''}</text>`).join('')}<path class="ln" pathLength="1" d="${d}"/></svg>`}
+function heat(){const rows=sel('Department'),ds=[...new Set(R.map(r=>r.Department))],ts=[...new Set(R.map(r=>r.TenureBand))].sort();
+ $('#heat').style.gridTemplateColumns=`150px repeat(${ts.length},1fr)`;
+ $('#heat').innerHTML='<div class="h"></div>'+ts.map(t=>`<div class="h">${cl(t)}</div>`).join('')+ds.map(d=>`<div class="h" style="text-align:left;padding-top:10px">${d}</div>`+ts.map(t=>{const s=st(rows.filter(r=>r.Department===d&&r.TenureBand===t));
+  return `<div style="background:color-mix(in srgb,var(--left) ${Math.min(100,s.rate*230)}%,var(--card))"><b>${s.n?pc(s.rate):'-'}</b><br><small>n=${s.n}</small></div>`}).join('')).join('')}
+function hot(rows,base){const out=[];['Department','JobRole','OverTime','AgeGroup','IncomeBand','TenureBand','BusinessTravel','MaritalStatus','JobSatisfaction','WorkLifeBalance'].forEach(k=>grp(rows,k).forEach(g=>{if(g.n>=30&&g.rate>base)out.push({...g,f:k})}));
+ out.sort((a,b)=>b.rate-a.rate);const seen=new Set(),pick=[];for(const g of out){if(pick.length<5)pick.push(g)}
+ $('#hot').innerHTML=pick.map(g=>`<li><b>${cl(g.k)}</b> (${g.f.replace(/([A-Z])/g,' $1').trim().toLowerCase()}): ${pc(g.rate)}, ${(g.rate/base).toFixed(1)}x the average, ${g.n} people</li>`).join('')||'<li>No groups of 30+ above average for this filter.</li>'}
+let first=true;
+function render(){const rows=sel(),s=st(rows),all=st(R);
+ document.querySelectorAll('.chip[data-k]').forEach(c=>c.classList.toggle('on',F[c.dataset.k]===c.dataset.v));
+ const keep=new Set(rows);[...$('#dots').children].forEach((d,i)=>d.classList.toggle('off',!keep.has(R[i])));
+ cnt($('#hl'),s.l);cnt($('#hn'),s.n);
+ $('#sub').textContent=`Attrition is ${pc(s.rate)} in this view, against ${pc(all.rate)} across the whole company.`;
+ const L=rows.filter(r=>r.Att),S=rows.filter(r=>!r.Att),ot=rows.filter(r=>r.OverTime==='Yes'),no=rows.filter(r=>r.OverTime==='No');
+ $('#k1').textContent=pc(s.rate);$('#k1s').textContent=`${s.l} leavers, ${s.n-s.l} stayers`;
+ $('#k2').textContent='$'+fmt(avg(L,'MonthlyIncome'));$('#k2s').textContent=`stayers average $${fmt(avg(S,'MonthlyIncome'))}`;
+ const a=st(ot).rate,b=st(no).rate;$('#k3').textContent=b?(a/b).toFixed(1)+'x':'n/a';$('#k3s').textContent=`${pc(a)} with overtime vs ${pc(b)} without`;
+ const cost=L.length*avg(L,'MonthlyIncome')*12*($('#rc').value/100);$('#k4').textContent='$'+(cost/1e6).toFixed(1)+'M';
+ ['Department','JobRole','OverTime','AgeGroup','IncomeBand','BusinessTravel','MaritalStatus','JobSatisfaction','WorkLifeBalance','EnvironmentSatisfaction'].forEach(bars);
+ line(rows);heat();hot(rows,s.rate||all.rate)}
+$('#rc').oninput=e=>{$('#rcv').textContent=e.target.value;render()};
+// tabs, theme, export
+$('#tabs').onclick=e=>{const p=e.target.dataset.p;if(!p)return;document.querySelectorAll('.pg').forEach(x=>x.classList.toggle('on',x.id===p));document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b===e.target));render()};
+const th=document.documentElement;th.dataset.theme=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+$('#theme').onclick=()=>th.dataset.theme=th.dataset.theme==='dark'?'light':'dark';
+$('#exp').onclick=()=>{const rows=sel(),csv=K.join(',')+'\n'+rows.map(r=>K.map(k=>r[k]).join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='filtered_employees.csv';a.click()};
+// simulator
+const SP=[['Age',18,60,35,1,'Age'],['MonthlyIncome',1000,20000,5000,100,'Monthly income ($)'],['YearsAtCompany',0,40,5,1,'Years at company'],['DistanceFromHome',1,29,9,1,'Distance from home (km)'],['NumCompaniesWorked',0,9,2,1,'Companies worked for'],['JobSatisfaction',1,4,3,1,'Job satisfaction (1-4)'],['WorkLifeBalance',1,4,3,1,'Work-life balance (1-4)'],['EnvironmentSatisfaction',1,4,3,1,'Environment satisfaction (1-4)'],['StockOptionLevel',0,3,1,1,'Stock option level (0-3)'],['YearsSinceLastPromotion',0,15,2,1,'Years since promotion']];
+const LBL={Age:'Age',MonthlyIncome:'Income',YearsAtCompany:'Tenure',DistanceFromHome:'Commute distance',NumCompaniesWorked:'Past employers',JobSatisfaction:'Job satisfaction',WorkLifeBalance:'Work-life balance',EnvironmentSatisfaction:'Environment',StockOptionLevel:'Stock options',YearsSinceLastPromotion:'Time since promotion',OverTime:'Overtime',FrequentTravel:'Frequent travel',Single:'Single'};
+$('#ctls').innerHTML=SP.map(([k,a,b,v,s,t])=>`<div class="ctl"><label for="${k}">${t}</label><output id="o${k}">${v}</output><input type="range" id="${k}" min="${a}" max="${b}" value="${v}" step="${s}"></div>`).join('');
+const vals=()=>{const v={};SP.forEach(([k])=>v[k]=+$('#'+k).value);['OverTime','FrequentTravel','Single'].forEach(k=>v[k]=$('#'+k).checked?1:0);return v};
+const zs=v=>M.names.map((n,i)=>((n==='MonthlyIncome'?Math.log(v[n]):v[n])-M.mean[i])/M.std[i]);
+const prob=v=>{const z=zs(v);return 1/(1+Math.exp(-(z.reduce((s,x,i)=>s+x*M.w[i],M.b))))};
+function sim(){const v=vals();SP.forEach(([k])=>$('#o'+k).textContent=v[k]);const p=prob(v);
+ const arc=$('#arc');arc.style.strokeDasharray=`${p*251.3} 251.3`;arc.style.stroke=p<.15?'var(--stay)':p<.35?'#e0a21b':'var(--left)';
+ cnt($('#pr'),p*100,x=>x.toFixed(0)+'%');$('#band').textContent=(p<.15?'Low':p<.35?'Elevated':'High')+` risk. Company average is ${pc(M.base)}.`;
+ const z=zs(v),c=M.names.map((n,i)=>[n,M.w[i]*z[i]]).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,6),mx=Math.max(...c.map(x=>Math.abs(x[1])),.01);
+ $('#why').innerHTML=c.map(([n,x])=>`<div class="cb"><span>${LBL[n]}</span><div><i style="${x>0?'left:50%':'right:50%'};width:${Math.abs(x)/mx*50}%;background:var(${x>0?'--left':'--stay'})"></i></div></div>`).join('')+'<p class="note">Coral pushes risk up, teal pulls it down.</p>';
+ const LV=[['Stop overtime',{OverTime:0}],['Raise pay by 15%',{MonthlyIncome:v.MonthlyIncome*1.15}],['Lift work-life balance to 3',{WorkLifeBalance:Math.max(v.WorkLifeBalance,3)}],['Grant stock options',{StockOptionLevel:Math.max(v.StockOptionLevel,1)}],['Make travel rare',{FrequentTravel:0}]].map(([t,o])=>[t,prob({...v,...o})-p]).sort((a,b)=>a[1]-b[1]);
+ $('#lev').innerHTML=LV.map(([t,d])=>`<div class="lv"><span>${t}</span><b>${Math.abs(d)<.0005?'no change':(d<0?'':'+')+(d*100).toFixed(1)+' pts'}</b></div>`).join('')}
+$('#sim').addEventListener('input',sim);
+$('#foot').textContent=`Source: IBM HR Analytics dataset (fictional, ${R.length} employees). Risk model: logistic regression, hold-out AUC ${M.auc}. Associations only, not for real hiring or firing decisions.`;
+render();sim();
+</script></body></html>
