@@ -2,7 +2,7 @@
 
 An interactive dashboard and Power BI project that shows **who leaves, when, and why**, built on the IBM HR Analytics Employee Attrition dataset (1,470 employees, 35 fields).
 
-**Live demo:** `https://<your-username>.github.io/IBM-HR-Attrition-Retention-Radar/` (enable GitHub Pages, see below)
+**Live demo:** `https://<Manal895i>.github.io/IBM-HR-Attrition-Retention-Radar/` (enable GitHub Pages, see below)
 
 ![Dashboard overview](docs/images/overview.png)
 
@@ -66,7 +66,7 @@ git init
 git add .
 git commit -m "Add Retention Radar dashboard and Power BI project"
 git branch -M main
-git remote add origin https://github.com/<your-username>/IBM-HR-Attrition-Retention-Radar.git
+git remote add origin https://github.com/<your-Manal895i>/IBM-HR-Attrition-Retention-Radar.git
 git push -u origin main
 ```
 
